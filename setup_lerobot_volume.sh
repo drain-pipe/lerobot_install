@@ -9,6 +9,20 @@ echo "=== Installing into $BASE_DIR ==="
 mkdir -p "$BASE_DIR"
 cd "$BASE_DIR"
 
+# ===== GLOBAL CACHE REDIRECTION (MUST BE FIRST) =====
+export HF_HOME=$BASE_DIR/.cache/huggingface
+export HUGGINGFACE_HUB_CACHE=$HF_HOME
+export TRANSFORMERS_CACHE=$HF_HOME
+export HF_DATASETS_CACHE=$BASE_DIR/.cache/datasets
+export TORCH_HOME=$BASE_DIR/.cache/torch
+export PIP_CACHE_DIR=$BASE_DIR/.cache/pip
+export TMPDIR=$BASE_DIR/tmp
+
+mkdir -p $HF_HOME $HF_DATASETS_CACHE $TORCH_HOME $PIP_CACHE_DIR $TMPDIR
+
+# Force conda cache onto volume
+conda config --add pkgs_dirs $BASE_DIR/conda_pkgs || true
+
 # ===== Miniforge =====
 echo "=== Installing Miniforge ==="
 MINIFORGE_SCRIPT="Miniforge3-$(uname)-$(uname -m).sh"
@@ -33,27 +47,26 @@ echo "=== Cloning LeRobot ==="
 git clone https://github.com/huggingface/lerobot.git
 cd lerobot
 
-# ===== Install =====
+# ===== Install (NO CACHE) =====
 echo "=== Installing LeRobot ==="
-pip install -e .
-pip install -e ".[pi]"
+pip install --no-cache-dir -e .
+pip install --no-cache-dir -e ".[pi]"
 
 # ===== HF CLI =====
 echo "=== Installing HF CLI ==="
 curl -LsSf https://hf.co/cli/install.sh | bash
 
-# ===== Cache redirection (CRITICAL) =====
-echo "=== Redirecting caches ==="
-mkdir -p "$BASE_DIR/.cache"
-
+# ===== Persist env vars =====
+echo "=== Persisting cache settings ==="
 cat <<EOF >> ~/.bashrc
-export HF_HOME=$BASE_DIR/.cache/huggingface
-export TRANSFORMERS_CACHE=$BASE_DIR/.cache/huggingface
-export TORCH_HOME=$BASE_DIR/.cache/torch
-export TMPDIR=$BASE_DIR/tmp
+export HF_HOME=$HF_HOME
+export HUGGINGFACE_HUB_CACHE=$HUGGINGFACE_HUB_CACHE
+export TRANSFORMERS_CACHE=$TRANSFORMERS_CACHE
+export HF_DATASETS_CACHE=$HF_DATASETS_CACHE
+export TORCH_HOME=$TORCH_HOME
+export PIP_CACHE_DIR=$PIP_CACHE_DIR
+export TMPDIR=$TMPDIR
 EOF
-
-mkdir -p "$BASE_DIR/tmp"
 
 echo "=== Done ==="
 echo "Activate with:"
