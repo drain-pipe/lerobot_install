@@ -3,7 +3,7 @@
 set -e
 
 # ===== CONFIG =====
-BASE_DIR="/workspace/lerobot_setup"
+BASE_DIR="/workspace/lerobot"
 
 echo "=== Installing into $BASE_DIR ==="
 mkdir -p "$BASE_DIR"
